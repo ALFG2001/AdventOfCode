@@ -1,3 +1,5 @@
+import time
+
 def checkCorretta(dizionario, riga):
     for i in range(len(riga)):
         if riga[i] in dizionario:
@@ -33,28 +35,39 @@ def correggiLista(dizionario, listaNonCorretta):
                     else:
                         return nuovaLista
     
+s = time.time()    
+ruleset = []
+rows = []
 dictPages = {}
 midSum = 0
 midSumCorretta = 0
 
 with open("2024\D5.txt", "r") as file:
     for riga in file:
-        if len(riga.strip("\n").split("|")) > 1:
-            numPrima, numDopo = riga.strip("\n").split("|")
-            if numPrima not in dictPages:
-                dictPages[numPrima] = [numDopo]
-            else:
-                dictPages[numPrima].append(numDopo)
-
-        elif len(riga.strip("\n")) > 0:
-            listaNum = riga.strip("\n").split(",")
-            corretto = checkCorretta(dictPages, listaNum)
-            
-            if corretto:
-                midSum += int(listaNum[len(listaNum)//2])
-            else:
-                listaCorretta = correggiLista(dictPages, listaNum)
-                midSumCorretta += int(listaCorretta[len(listaCorretta)//2])
+        if "|" in riga:
+            ruleset.append(riga.strip("\n"))
+        elif "," in riga:
+            rows.append(riga.strip("\n"))
                         
+for riga in ruleset:
+    numPrima, numDopo = riga.split("|")
+    if numPrima not in dictPages:
+        dictPages[numPrima] = [numDopo]
+    else:
+        dictPages[numPrima].append(numDopo)
+
+for riga in rows:
+    listaNum = riga.split(",")
+    corretto = checkCorretta(dictPages, listaNum)
+    
+    if corretto:
+        midSum += int(listaNum[len(listaNum)//2])
+    else:
+        listaCorretta = correggiLista(dictPages, listaNum)
+        midSumCorretta += int(listaCorretta[len(listaCorretta)//2])
+                     
 print(midSum)
 print(midSumCorretta)
+e = time.time()
+
+print(f"{e-s:.6f} seconds")
