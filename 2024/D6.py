@@ -1,3 +1,5 @@
+import copy
+
 def muovi(simbolo, posX, posY, listaCaselle, setCaselle: set):
     global caselleCronologiche
     # Determina la direzione di movimento e la rotazione a destra
@@ -86,19 +88,17 @@ def muoviLoop(simbolo, posX, posY, listaCaselle, history: set):
     # Restituisci False per indicare che il movimento è avvenuto senza loop
     return False, newX, newY, simbolo, False
 
-
 caselle = []
-caselle2 = []
+caselleCopy = []
 ostacoli = []
-y = 0
 caselleUniche = set()
 caselleCronologiche = []
 
-trovato = False
 with open("2024/D6.txt", "r") as file:
+    y = 0
     for riga in file:
         caselle.append([c for c in riga.strip("\n")])
-        caselle2.append([c if c in '.#' else '.' for c in riga.strip("\n")])
+        caselleCopy.append([c if c in '.#' else '.' for c in riga.strip("\n")])
         try:
             x = riga.index("^")
             start = (x, y)
@@ -120,21 +120,14 @@ while not esci:
 
 print("Caselle Uniche",len(caselleUniche))
 
-import copy
-
-collezioneMappe = [copy.deepcopy(caselle2) for _ in range(len(caselleCronologiche))]
-xyLoop = set()
-
-
+xyLoop = []
 
 indiceMappa = 0
-_ = 0
-
-
-for x,y,p in caselleCronologiche:
+for x,y in caselleUniche:
     oX, oY = x,y
+    mappa = copy.deepcopy(caselleCopy)
 
-    collezioneMappe[indiceMappa][oY][oX] = "#"
+    mappa[oY][oX] = "#"
 
     visitedStates = set()
     exitLoop = False
@@ -146,11 +139,11 @@ for x,y,p in caselleCronologiche:
     while not exitLoop:
         
         exitLoop, sx, sy, p, loopFlag = muoviLoop(
-            p, sx, sy, collezioneMappe[indiceMappa], visitedStates
+            p, sx, sy, mappa, visitedStates
         )    
 
     if loopFlag:
-        xyLoop.add((oX,oY))
+        xyLoop.append((oX,oY))
 
     indiceMappa += 1
 
