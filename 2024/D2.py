@@ -1,50 +1,46 @@
-def parte1():
-    SommaSafe = 0
+def calculate_safe_reports():
+    SafeSumPart1 = 0
+    SafeSumPart2 = 0
 
-    with open("2024\D2.txt", "r") as reports:
-        for riga in reports:
-            livelli = map(int, riga.strip("\n").split(" "))
-            livelli = list(livelli)
+    with open("2024\\D2.txt", "r") as reports:
+        for line in reports:
+            levels = list(map(int, line.strip("\n").split(" ")))
 
-            safe = True
-            if sorted(livelli) == livelli or sorted(livelli, reverse=True) == livelli:
-                for i in range(len(livelli)-1):
-                    if abs(livelli[i] - livelli[i+1]) not in [1,2,3]:
-                        safe = False
+            safePart1 = True
+            if sorted(levels) == levels or sorted(levels, reverse=True) == levels:
+                for i in range(len(levels) - 1):
+                    if abs(levels[i] - levels[i + 1]) not in [1, 2, 3]:
+                        safePart1 = False
                         break
             else:
-                safe = False
-                
-            if safe:
-                SommaSafe += 1
+                safePart1 = False
 
-    print("Somma report safe:",SommaSafe)
+            if safePart1:
+                SafeSumPart1 += 1
 
-def parte2():
-    SommaSafe = 0
+            for index in range(len(levels)):
+                dampenedLevels = levels[0:index] + levels[index + 1:len(levels)]
 
-    with open("2024\D2.txt", "r") as reports:
-        for riga in reports:
-            livelli = list(map(int, riga.strip("\n").split(" ")))
-
-            for indice in range(len(livelli)):
-                livelliDampened = livelli[0:indice]+livelli[indice+1:len(livelli)]
-
-                safe = True
-                if sorted(livelliDampened) == livelliDampened or sorted(livelliDampened, reverse=True) == livelliDampened:
-                    for i in range(len(livelliDampened)-1):
-                        if abs(livelliDampened[i] - livelliDampened[i+1]) not in [1,2,3]:
-                            safe = False
+                safePart2 = True
+                if sorted(dampenedLevels) == dampenedLevels or sorted(dampenedLevels, reverse=True) == dampenedLevels:
+                    for i in range(len(dampenedLevels) - 1):
+                        if abs(dampenedLevels[i] - dampenedLevels[i + 1]) not in [1, 2, 3]:
+                            safePart2 = False
                             break
                 else:
-                    safe = False
+                    safePart2 = False
 
-                if safe:
-                    SommaSafe += 1
+                if safePart2:
+                    SafeSumPart2 += 1
                     break
 
-    print("Somma report safe (dampened):",SommaSafe)   
+    print("Total safe reports:", SafeSumPart1)
+    print("Total safe reports (dampened):", SafeSumPart2)
 
-print("02-12-2024")
-parte1()     
-parte2()
+
+import time
+
+start_time = time.time()
+calculate_safe_reports()
+end_time = time.time()
+print(f"{end_time - start_time:.6f} seconds")

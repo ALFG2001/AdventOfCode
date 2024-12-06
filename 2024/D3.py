@@ -1,41 +1,19 @@
-def mul(a,b):
+def mul(a, b):
     return a * b
 
-def parte1():
-    with open("2024\D3.txt", "r") as file:
-        riga = file.read()
-    
+def calculate_multiplications():
+    with open("2024\\D3.txt", "r") as file:
+        line = file.read()
+
     index = 0
-    sum_mul = 0
-
-    while index != -1:
-        mul_index = riga.find("mul(", index)
-
-        if mul_index == -1:
-            break
-        
-        start = mul_index + 4
-        end = riga.find(")", start)
-        if end != -1:
-            params = riga[start:end].split(",")
-            if len(params) == 2 and all(p.strip().isdigit() for p in params):
-                sum_mul += eval(riga[mul_index:end+1])
-            index = mul_index + 4
-
-    print("Somma delle moltiplicazioni:",sum_mul)
-
-def parte2():
-    with open("2024\D3.txt", "r") as file:
-        riga = file.read()
-    
-    index = 0
+    sum_mul_part1 = 0
     enabled = True
-    sum_mul = 0
+    sum_mul_part2 = 0
 
     while index != -1:
-        do_index = riga.find("do()", index)
-        dont_index = riga.find("don't()", index)
-        mul_index = riga.find("mul(", index)
+        do_index = line.find("do()", index)
+        dont_index = line.find("don't()", index)
+        mul_index = line.find("mul(", index)
 
         next_index = min((i for i in [do_index, dont_index, mul_index] if i != -1), default=-1)
         if next_index == -1:
@@ -50,18 +28,24 @@ def parte2():
             index = dont_index + 7
 
         elif next_index == mul_index:
-            if enabled:
-                start = mul_index + 4
-                end = riga.find(")", start)
-                if end != -1:
-                    params = riga[start:end].split(",")
-                    if len(params) == 2 and all(p.strip().isdigit() for p in params):
-                        sum_mul += eval(riga[mul_index:end+1])
+            start = mul_index + 4
+            end = line.find(")", start)
+            if end != -1:
+                params = line[start:end].split(",")
+                if len(params) == 2 and all(p.strip().isdigit() for p in params):
+                    if enabled:
+                        sum_mul_part2 += eval(line[mul_index:end+1])
+                    sum_mul_part1 += eval(line[mul_index:end+1])
 
             index = mul_index + 4
 
-    print("Somma delle moltiplicazioni abilitate:",sum_mul)
+    print("Total of the multiplications:", sum_mul_part1)
+    print("Total of the enabled multiplications:", sum_mul_part2)
 
-print("03-12-2024")
-parte1()    
-parte2()
+
+import time
+
+start_time = time.time()
+calculate_multiplications()
+end_time = time.time()
+print(f"{end_time - start_time:.6f} seconds")

@@ -1,38 +1,31 @@
-def parte1():
-    lista1 = []
-    lista2 = []
-    sommaDist = 0
-
-    with open("2024\D1.txt", "r") as stelle:
-        for coppia in stelle:
-            stella1, stella2 = map(int, coppia.strip("\n").split())
-            lista1.append(stella1)
-            lista2.append(stella2)
-
-    lista1.sort()
-    lista2.sort()
-
-    for i in range(len(lista1)):
-        sommaDist += abs(lista1[i] - lista2[i])
-
-    print("Somma Distanze:",sommaDist)
-
-def parte2():
-    Lista1 = []
-    lista2 = []
+def calculate_distances_and_similarity():
+    list1 = []
+    list2 = []
+    totalDist = 0
     simScore = 0
 
-    with open("2024\D1.txt", "r") as stelle:
-        for coppia in stelle:
-            stella1, stella2 = map(int, coppia.strip("\n").split())
-            Lista1.append(stella1)
-            lista2.append(stella2)
+    with open("2024\\D1.txt", "r") as stars:
+        for pair in stars:
+            star1, star2 = map(int, pair.strip("\n").split())
+            list1.append(star1)
+            list2.append(star2)
 
-    for stella in Lista1:
-        simScore += stella*lista2.count(stella)
+    list1.sort()
+    list2.sort()
 
-    print("Similarity Score:",simScore)
+    for i in range(len(list1)):
+        totalDist += abs(list1[i] - list2[i])
 
-print("01-12-2024")
-parte1()     
-parte2()
+    for star in list1:
+        simScore += star * list2.count(star)
+
+    print("Total Distance:", totalDist)
+    print("Similarity Score:", simScore)
+
+
+import time
+
+start_time = time.time()
+calculate_distances_and_similarity()
+end_time = time.time()
+print(f"{end_time - start_time:.6f} seconds")

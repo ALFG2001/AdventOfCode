@@ -1,150 +1,134 @@
-import copy
+def guard():
+    def move(symbol, posX, posY, grid, visited_cells: set):
+        match symbol:
+            case "^":
+                movement = [0, -1]
+                right = ">"
+            case "v":
+                movement = [0, +1]
+                right = "<"
+            case ">":
+                movement = [+1, 0]
+                right = "v"
+            case "<":
+                movement = [-1, 0]
+                right = "^"
 
-def muovi(simbolo, posX, posY, listaCaselle, setCaselle: set):
-    global caselleCronologiche
-    # Determina la direzione di movimento e la rotazione a destra
-    match simbolo:
-        case "^":
-            spostamento = [0, -1]
-            destra = ">"
-        case "v":
-            spostamento = [0, +1]
-            destra = "<"
-        case ">":
-            spostamento = [+1, 0]
-            destra = "v"
-        case "<":
-            spostamento = [-1, 0]
-            destra = "^"
+        newY = posY + movement[1]
+        newX = posX + movement[0]
 
-    # Calcola le nuove coordinate
-    newY = posY + spostamento[1]
-    newX = posX + spostamento[0]
+        if newY < 0 or newY >= len(grid) or newX < 0 or newX >= len(grid[0]):
+            return True, newX, newY, symbol
 
-    # Controlla i confini della griglia
-    if newY < 0 or newY >= len(listaCaselle) or newX < 0 or newX >= len(listaCaselle[0]):
-        return True, newX, newY, simbolo  # Movimento fuori dai confini
+        target_cell = grid[newY][newX]
 
-    # Recupera la casella target
-    casellaTarget = listaCaselle[newY][newX]
+        if target_cell == "#":
+            return move(right, posX, posY, grid, visited_cells)
 
-    # Se la casella è un muro, gira a destra e prova di nuovo
-    if casellaTarget == "#":
-        return muovi(destra, posX, posY, listaCaselle, setCaselle)
+        grid[newY][newX] = symbol
+        visited_cells.add((newX, newY))
+        historical_cells.append((newX, newY, symbol))
+        return False, newX, newY, symbol
 
-    # Aggiorna la posizione e segna la casella visitata
-    listaCaselle[posY][posX] = "X"  # Segna la vecchia posizione come visitata
-    listaCaselle[newY][newX] = simbolo  # Aggiorna la nuova posizione con il simbolo
-    setCaselle.add((newX, newY))  # Registra la nuova posizione visitata
-    caselleCronologiche.append((newX,newY, simbolo))
-    # Restituisci False per indicare che il movimento è avvenuto
-    return False, newX, newY, simbolo
+    def moveLoop(symbol, posX, posY, grid, history: set):
+        match symbol:
+            case "^":
+                movement = [0, -1]
+                right = ">"
+            case "v":
+                movement = [0, +1]
+                right = "<"
+            case ">":
+                movement = [+1, 0]
+                right = "v"
+            case "<":
+                movement = [-1, 0]
+                right = "^"
 
-def muoviLoop(simbolo, posX, posY, listaCaselle, history: set):
-    # Determina la direzione di movimento e la rotazione a destra
-    match simbolo:
-        case "^":
-            spostamento = [0, -1]
-            destra = ">"
-        case "v":
-            spostamento = [0, +1]
-            destra = "<"
-        case ">":
-            spostamento = [+1, 0]
-            destra = "v"
-        case "<":
-            spostamento = [-1, 0]
-            destra = "^"
+        newY = posY + movement[1]
+        newX = posX + movement[0]
 
-    # Calcola le nuove coordinate
-    newY = posY + spostamento[1]
-    newX = posX + spostamento[0]
+        if newY < 0 or newY >= len(grid) or newX < 0 or newX >= len(grid[0]):
+            return True, newX, newY, symbol, False
 
-    # Controlla i confini della griglia
-    if newY < 0 or newY >= len(listaCaselle) or newX < 0 or newX >= len(listaCaselle[0]):
-        return True, newX, newY, simbolo, False  # Movimento fuori dai confini
+        target_cell = grid[newY][newX]
 
-    # Recupera la casella target
-    casellaTarget = listaCaselle[newY][newX]
-
-    # Se la casella è un muro, gira a destra e prova di nuovo
-    if casellaTarget == "#":
-        return muoviLoop(destra, posX, posY, listaCaselle, history)
-
-    # Controlla se lo stato attuale (posizione e direzione) è già stato visitato
-    
-
-    # Aggiorna la posizione e segna la casella visitata
-    listaCaselle[posY][posX] = "X"  # Segna la vecchia posizione come visitata
-    listaCaselle[newY][newX] = simbolo  # Aggiorna la nuova posizione con il simbolo
-
-    stato_attuale = (newX, newY, simbolo)
-    if stato_attuale in history:
-        return True, newX, newY, simbolo, True  # Loop infinito rilevato
-
-    # Aggiungi lo stato attuale alla cronologia
-    history.add(stato_attuale)
-
-    # Restituisci False per indicare che il movimento è avvenuto senza loop
-    return False, newX, newY, simbolo, False
-
-caselle = []
-caselleCopy = []
-ostacoli = []
-caselleUniche = set()
-caselleCronologiche = []
-
-with open("2024/D6.txt", "r") as file:
-    y = 0
-    for riga in file:
-        caselle.append([c for c in riga.strip("\n")])
-        caselleCopy.append([c if c in '.#' else '.' for c in riga.strip("\n")])
-        try:
-            x = riga.index("^")
-            start = (x, y)
-        except ValueError:
-            y += 1
+        if target_cell == "#":
+            return moveLoop(right, posX, posY, grid, history)
         
+        grid[posY][posX] = "X"
+        grid[newY][newX] = symbol 
 
-for i in range(len(caselle)):
-    for j in range(len(caselle[i])):
-        if caselle[i][j] == "#":
-            ostacoli.append((j,i))
+        current_state = (newX, newY, symbol)
+        if current_state in history:
+            return True, newX, newY, symbol, True
 
-esci = False
-x, y = start[0], start[1]
-caselleUniche.add((x,y))
-simbolo = "^"
-while not esci:
-    esci, x, y, simbolo = muovi(simbolo, x, y, caselle, caselleUniche)
+        history.add(current_state)
 
-print("Caselle Uniche",len(caselleUniche))
+        return False, newX, newY, symbol, False
 
-xyLoop = []
+    grid = []
+    grid_copy = []
+    obstacles = []
+    unique_cells = set()
+    historical_cells = []
 
-indiceMappa = 0
-for x,y in caselleUniche:
-    oX, oY = x,y
-    mappa = copy.deepcopy(caselleCopy)
+    with open("2024/D6.txt", "r") as file:
+        y = 0
+        for line in file:
+            grid.append([c for c in line.strip("\n")])
+            grid_copy.append([c if c in '.#' else '.' for c in line.strip("\n")])
+            try:
+                x = line.index("^")
+                start = (x, y)
+            except ValueError:
+                y += 1
+            
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            if grid[i][j] == "#":
+                obstacles.append((j, i))
 
-    mappa[oY][oX] = "#"
+    exit_flag = False
+    x, y = start[0], start[1]
+    unique_cells.add((x, y))
+    symbol = "^"
+    while not exit_flag:
+        exit_flag, x, y, symbol = move(symbol, x, y, grid, unique_cells)
 
-    visitedStates = set()
-    exitLoop = False
-    loopCoordinates = None
+    print("Unique Cells:", len(unique_cells))
 
-    sx, sy = start
-    p = "^"
-    
-    while not exitLoop:
+    loop_positions = []
+
+    map_index = 0
+    for x, y in unique_cells:
+        oX, oY = x, y
+        map_copy = [row[:] for row in grid_copy]
+
+        map_copy[oY][oX] = "#"
+
+        visited_states = set()
+        exit_loop = False
+
+        sx, sy = start
+        p = "^"
         
-        exitLoop, sx, sy, p, loopFlag = muoviLoop(
-            p, sx, sy, mappa, visitedStates
-        )    
+        while not exit_loop:
+            
+            exit_loop, sx, sy, p, loop_flag = moveLoop(
+                p, sx, sy, map_copy, visited_states
+            )    
 
-    if loopFlag:
-        xyLoop.append((oX,oY))
+        if loop_flag:
+            loop_positions.append((oX, oY))
 
-    indiceMappa += 1
+        map_index += 1
 
-print("Numero Ostacoli",len(xyLoop))
+    print("Number of Obstacles:", len(loop_positions))
+
+import time
+
+start_time = time.time()
+guard()
+end_time = time.time()
+print(f"{end_time - start_time:.6f} seconds")

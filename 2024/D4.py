@@ -1,90 +1,68 @@
-def trovaXMAS(lettere, parola):
-    direzioni = [
-        (0, 1),  # Destra
-        (0, -1), # Sinistra
-        (1, 0),  # Sotto
-        (-1, 0), # Sopra
-        (1, 1),  # Diagonale basso-destra
-        (-1, -1),# Diagonale alto-sinistra
-        (-1, 1), # Diagonale alto-destra
-        (1, -1)  # Diagonale basso-sinistra
+def find(letters, word):
+    directions = [
+        (0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)
     ]
-    parola_len = len(parola)
-    count = 0
+    word_len = len(word)
+    count_xmas = 0
+    count_cross = 0
 
-    for i in range(len(lettere)):
-        for j in range(len(lettere[i])):
-            for dx, dy in direzioni:
-                # Controlla se la parola può essere trovata in questa direzione
+    def check_x_mas(i, j):
+        if not (0 <= i - 1 < len(letters) and 0 <= i + 1 < len(letters) and 
+                0 <= j - 1 < len(letters[0]) and 0 <= j + 1 < len(letters[0])):
+            return False
+
+        if letters[i][j] != 'A':
+            return False
+
+        case1 = (
+            letters[i - 1][j - 1] == 'S' and letters[i - 1][j + 1] == 'M' and
+            letters[i + 1][j - 1] == 'S' and letters[i + 1][j + 1] == 'M'
+        )
+        case2 = (
+            letters[i - 1][j - 1] == 'S' and letters[i - 1][j + 1] == 'S' and
+            letters[i + 1][j - 1] == 'M' and letters[i + 1][j + 1] == 'M'
+        )
+        case3 = (
+            letters[i - 1][j - 1] == 'M' and letters[i - 1][j + 1] == 'S' and
+            letters[i + 1][j - 1] == 'M' and letters[i + 1][j + 1] == 'S'
+        )
+        case4 = (
+            letters[i - 1][j - 1] == 'M' and letters[i - 1][j + 1] == 'M' and
+            letters[i + 1][j - 1] == 'S' and letters[i + 1][j + 1] == 'S'
+        )
+
+        return case1 or case2 or case3 or case4
+
+    for i in range(len(letters)):
+        for j in range(len(letters[i])):
+            if check_x_mas(i, j):
+                count_cross += 1
+            for dx, dy in directions:
                 if all(
-                    0 <= i + k * dx < len(lettere) and
-                    0 <= j + k * dy < len(lettere[0]) and
-                    lettere[i + k * dx][j + k * dy] == parola[k]
-                    for k in range(parola_len)
+                    0 <= i + k * dx < len(letters) and
+                    0 <= j + k * dy < len(letters[0]) and
+                    letters[i + k * dx][j + k * dy] == word[k]
+                    for k in range(word_len)
                 ):
-                    count += 1
-    return count    
+                    count_xmas += 1
 
-def verifica_x_mas(lettere, i, j):
-    # Verifica che le coordinate siano valide
-    if not (0 <= i - 1 < len(lettere) and 0 <= i + 1 < len(lettere) and 
-            0 <= j - 1 < len(lettere[0]) and 0 <= j + 1 < len(lettere[0])):
-        return False
-    
-    if lettere[i][j] != 'A':
-        return False
+    return count_xmas, count_cross
 
-    # Controlla i 4 casi
-    caso1 = (
-        lettere[i - 1][j - 1] == 'S' and lettere[i - 1][j + 1] == 'M' and
-        lettere[i + 1][j - 1] == 'S' and lettere[i + 1][j + 1] == 'M'
-    )
-    caso2 = (
-        lettere[i - 1][j - 1] == 'S' and lettere[i - 1][j + 1] == 'S' and
-        lettere[i + 1][j - 1] == 'M' and lettere[i + 1][j + 1] == 'M'
-    )
-    caso3 = (
-        lettere[i - 1][j - 1] == 'M' and lettere[i - 1][j + 1] == 'S' and
-        lettere[i + 1][j - 1] == 'M' and lettere[i + 1][j + 1] == 'S'
-    )
-    caso4 = (
-        lettere[i - 1][j - 1] == 'M' and lettere[i - 1][j + 1] == 'M' and
-        lettere[i + 1][j - 1] == 'S' and lettere[i + 1][j + 1] == 'S'
-    )
+def calculate_occurrences():
+    letters = []
+    with open("2024\\D4.txt", "r") as file:
+        for line in file:
+            letters.append([l for l in line.strip("\n")])
 
-    return caso1 or caso2 or caso3 or caso4
+    word = "XMAS"
+    count_xmas, count_cross = find(letters, word)
 
-def trovaCroce(lettere):
-    count = 0
-    for i in range(len(lettere)):
-        for j in range(len(lettere[i])):
-            if verifica_x_mas(lettere, i, j):
-                count += 1
-    return count
+    print(f"The word '{word}' appears {count_xmas} times.")
+    print(f"The 'MAS' cross appears {count_cross} times.")
 
+import time
 
-def parte1():
-    lettere = []
-    with open("2024\D4.txt.txt", "r") as file:
-        for riga in file:
-            letteraRiga = [l for l in riga.strip("\n")]
-            lettere.append(letteraRiga)
-
-    parola = "XMAS"
-    total_occurrences = trovaXMAS(lettere, parola)
-    print(f"La parola '{parola}' appare {total_occurrences} volte.")
-
-def parte2():
-    lettere = []
-    with open("2024\D4.txt.txt", "r") as file:
-        for riga in file:
-            letteraRiga = [l for l in riga.strip("\n")]
-            lettere.append(letteraRiga)
-
-    parola = "MAS"
-    total_occurrences = trovaCroce(lettere)
-    print(f"La parola '{parola}' appare {total_occurrences} volte.")
-
-print("04-12-2024")
-parte1()     
-parte2()
+start_time = time.time()
+calculate_occurrences()
+end_time = time.time()
+print(f"{end_time - start_time:.6f} seconds")
