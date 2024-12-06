@@ -25,7 +25,6 @@ def guard():
         if target_cell == "#":
             return move(right, posX, posY, grid, visited_cells)
 
-        grid[newY][newX] = symbol
         visited_cells.add((newX, newY))
         historical_cells.append((newX, newY, symbol))
         return False, newX, newY, symbol
@@ -55,9 +54,6 @@ def guard():
 
         if target_cell == "#":
             return moveLoop(right, posX, posY, grid, history)
-        
-        grid[posY][posX] = "X"
-        grid[newY][newX] = symbol 
 
         current_state = (newX, newY, symbol)
         if current_state in history:
