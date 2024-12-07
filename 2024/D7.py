@@ -1,6 +1,4 @@
 import itertools
-from multiprocessing import Pool
-
 
 def generatePermutations(n, operatorList):
     return itertools.product(operatorList, repeat=n)
