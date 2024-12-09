@@ -38,6 +38,15 @@ def findAntiNodes(positionList, maxX, maxY):
 
     return antiNodeList
 
+def addPointLine(extendedAntiNodes, direction, current):
+    while True:
+        newPoint = (current[0] - direction[0], current[1] - direction[1])
+        if 0 <= newPoint[0] <= maxY and 0 <= newPoint[1] <= maxX:
+            extendedAntiNodes.add(newPoint)
+            current = newPoint
+        else:
+            break
+
 # Function to find extended anti-nodes aligned with the given positions
 def findExtendedAntiNodes(positionList, maxX, maxY):
     extendedAntiNodes = set()
@@ -52,24 +61,10 @@ def findExtendedAntiNodes(positionList, maxX, maxY):
             direction = (distY, distX)  # Direction of alignment
 
             # Extend in the negative direction
-            current = pos
-            while True:
-                newPoint = (current[0] - direction[0], current[1] - direction[1])
-                if 0 <= newPoint[0] <= maxY and 0 <= newPoint[1] <= maxX:
-                    extendedAntiNodes.add(newPoint)
-                    current = newPoint
-                else:
-                    break
+            addPointLine(extendedAntiNodes, direction, pos)
 
             # Extend in the positive direction
-            current = node
-            while True:
-                newPoint = (current[0] + direction[0], current[1] + direction[1])
-                if 0 <= newPoint[0] <= maxY and 0 <= newPoint[1] <= maxX:
-                    extendedAntiNodes.add(newPoint)
-                    current = newPoint
-                else:
-                    break
+            addPointLine(extendedAntiNodes, direction, node)
 
     return extendedAntiNodes
 
