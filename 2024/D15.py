@@ -71,37 +71,54 @@ def move(grid, direction, robot_position, symbol):
     return new_position
 
 def can_move_vertical(grid, direction, robot_position, symbol):
-    new_y = robot_position[0] + direction[0]  # Check vertical movement (row)
+    # Calculate new positions
+    new_y = robot_position[0] + direction[0]  # Vertical movement (row)
     new_x = robot_position[1]  # Keep the column fixed
 
-    # Determine the pair's column for vertical movement (left or right box)
-    match symbol:
-        case "[":
-            pair_x = new_x + 1  # Right box for the pair
-        case "]":
-            pair_x = new_x - 1  # Left box for the pair
+    # Determine the pair's column based on the symbol
+    if symbol == "[":
+        pair_x = new_x + 1  # Right box for the pair
+    elif symbol == "]":
+        pair_x = new_x - 1  # Left box for the pair
 
-    # If there's a wall at either target position, we can't move
-    if grid[new_y][new_x] == "#" or grid[new_y][pair_x] == "#":
+    # Check if the new positions are blocked by walls
+    if grid[new_y][new_x] == "#" or  grid[new_y][pair_x] == "#":
         return False
+
+    # Check if both positions are boxes
+    if grid[new_y][new_x] in ("[", "]") and grid[new_y][pair_x] in ("[", "]"):
+        # Recursively check vertical movement for both boxes
+        return (
+            can_move_vertical(grid, direction, (new_y, new_x), grid[new_y][new_x]) and
+            can_move_vertical(grid, direction, (new_y, pair_x), grid[new_y][pair_x])
+        )
+
+    # Handle case where only one position is a box
+    if grid[new_y][new_x] in ("[", "]"):
+        return can_move_vertical_for_box(grid, direction, new_y, new_x)
+    
+    if pair_x is not None and grid[new_y][pair_x] in ("[", "]"):
+        return can_move_vertical_for_box(grid, direction, new_y, pair_x)
+
+    return True  # No issues found, movement is allowed
+
+
+def can_move_vertical_for_box(grid, direction, new_y, box_x):
+    # Recursive check for vertical movement for a box and its pair
+    if grid[new_y][box_x] == "[":
+        return (
+            can_move_vertical(grid, direction, (new_y, box_x), grid[new_y][box_x]) and
+            can_move_vertical(grid, direction, (new_y, box_x + 1), grid[new_y][box_x + 1])
+        )
+    elif grid[new_y][box_x] == "]":
+        return (
+            can_move_vertical(grid, direction, (new_y, box_x), grid[new_y][box_x]) and
+            can_move_vertical(grid, direction, (new_y, box_x - 1), grid[new_y][box_x - 1])
+        )
     else:
-        # If both target positions are boxes, check if we can move both vertically
-        if grid[new_y][new_x] in ("[", "]") and grid[new_y][pair_x] in ("[", "]"):
-            return can_move_vertical(grid, direction, (new_y, new_x), grid[new_y][new_x]) and can_move_vertical(grid, direction, (new_y, pair_x), grid[new_y][pair_x])
-        elif grid[new_y][new_x] in ("[", "]"):
-            # If only the first position is a box, recursively check vertical movement for both
-            if grid[new_y][new_x] == "[":
-                return can_move_vertical(grid, direction, (new_y, new_x), grid[new_y][new_x]) and can_move_vertical(grid, direction, (new_y, new_x + 1), grid[new_y][new_x + 1])
-            else:
-                return can_move_vertical(grid, direction, (new_y, new_x), grid[new_y][new_x]) and can_move_vertical(grid, direction, (new_y, new_x - 1), grid[new_y][new_x - 1])
-        elif grid[new_y][pair_x] in ("[", "]"):
-            # If only the second position is a box, recursively check vertical movement for both
-            if grid[new_y][pair_x] == "[":
-                return can_move_vertical(grid, direction, (new_y, pair_x), grid[new_y][pair_x]) and can_move_vertical(grid, direction, (new_y, pair_x + 1), grid[new_y][pair_x + 1])
-            else:
-                return can_move_vertical(grid, direction, (new_y, pair_x), grid[new_y][pair_x]) and can_move_vertical(grid, direction, (new_y, pair_x - 1), grid[new_y][pair_x - 1])
-        
-    return True  # If no issues found, return True
+        # If the box is neither "[" nor "]", return True (no box movement needed)
+        return True
+
 
 def make_new_grid(grid):
     new_grid = []  # To store the newly generated grid
