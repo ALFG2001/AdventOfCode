@@ -1,3 +1,7 @@
+import os
+import time
+import sys
+
 def parse_input(path):
     with open(path, "r") as file:
         grid = []  # To store the grid representation
@@ -17,9 +21,12 @@ def parse_input(path):
                         "<": (0, -1)   # Move left
                     }[symbol])
             else:
+                row = list(row)
                 for column_index, cell in enumerate(row):
                     if cell == "@":
                         start_position = (row_index, column_index)  # Starting position of the robot
+                    if cell == ".":
+                        row[column_index] = " "
                 grid.append(list(row))  # Add the current row to the grid
 
         return grid, rules, start_position
@@ -64,7 +71,7 @@ def move(grid, direction, robot_position, symbol):
             else:
                 new_y, new_x = robot_position
 
-    grid[robot_position[0]][robot_position[1]] = "."  # Clear the old robot position
+    grid[robot_position[0]][robot_position[1]] = " "  # Clear the old robot position
     grid[new_y][new_x] = symbol  # Place robot at the new position
 
     new_position = (new_y, new_x)  # Update robot's position
@@ -102,6 +109,7 @@ def can_move_vertical(grid, direction, robot_position, symbol):
 
     return True  # No issues found, movement is allowed
 
+
 def can_move_vertical_for_box(grid, direction, new_y, box_x):
     # Recursive check for vertical movement for a box and its pair
     if grid[new_y][box_x] == "[":
@@ -118,6 +126,7 @@ def can_move_vertical_for_box(grid, direction, new_y, box_x):
         # If the box is neither "[" nor "]", return True (no box movement needed)
         return True
 
+
 def make_new_grid(grid):
     new_grid = []  # To store the newly generated grid
     for row in grid:
@@ -128,18 +137,15 @@ def make_new_grid(grid):
                     new_row.extend(["#","#"])  # Walls become double walls
                 case "O":
                     new_row.extend(["[","]"])  # Boxes become a large box
-                case ".":
-                    new_row.extend([".","."])  # Empty spaces remain as empty spaces
+                case " ":
+                    new_row.extend([" "," "])  # Empty spaces remain as empty spaces
                 case "@":
-                    new_row.extend(["@","."])  # Start position is followed by an empty space
+                    new_row.extend(["@"," "])  # Start position is followed by an empty space
         new_grid.append(new_row)
 
     return new_grid
 
-def calculate_gps(grid, symbol, rules, position):
-    for rule in rules:
-        position = move(grid, rule, position, "@")  # Move robot according to the rules
-
+def calculate_gps(grid, symbol):
     gps = 0  # Initialize GPS calculation
     for row_index, row in enumerate(grid):
         for column_index, cell in enumerate(row):
@@ -147,20 +153,76 @@ def calculate_gps(grid, symbol, rules, position):
                 gps += 100 * row_index + column_index  # Calculate GPS based on position of the symbol
     return gps
 
-def main():
-    grid, rules, start_position = parse_input("2024/D15.txt")  # Parse input file
-    new_grid = make_new_grid(grid)  # Create new grid with modified structure
-    new_position = (start_position[0], start_position[1] * 2)  # Adjust starting position for new grid
+def print_grids_side_by_side(grid1, grid2):
+    """Function to print two grids side by side with colored symbols."""
+    sys.stdout.write("\033[H")  # Move cursor to the top-left corner
+    sys.stdout.flush()
 
-    gps1 = calculate_gps(grid, "O", rules, start_position)  # Calculate GPS for the original grid
+    for row1, row2 in zip(grid1, grid2):
+        row_str1 = ""
+        row_str2 = ""
+        
+        # For grid1
+        for symbol in row1:
+            if symbol == "@":
+                row_str1 += "🤖"  # Robot
+            elif symbol == "O":
+                row_str1 += "📦"  # Boxes
+            elif symbol == "#": 
+                row_str1 += "🧱"  # Wall
+            else:
+                row_str1 += "⠀⠀"  # Empty space
+                
+        # For grid2 (similar formatting for the new grid)
+        for symbol in row2:
+            if symbol == "@":
+                row_str2 += "🤖"  # Robot
+            elif symbol == "[": 
+                row_str2 += "⏪"  # Left side of the box
+            elif symbol == "]": 
+                row_str2 += "⏩"  # Right side of the box
+            elif symbol == "#": 
+                row_str2 += "🧱"  # Wall
+            else:
+                row_str2 += "⠀⠀"  # Empty space
+        
+        print(" "*20 + row_str1 + " "*20 + row_str2)  # Add space between the grids
+
+
+def animate_grid_change(grid1, grid2, start_position1, start_position2, rules):
+    """Animate the grid change step-by-step without screen flashing for both grids."""
+    position1 = start_position1
+    position2 = start_position2
+
+    # Print both grids side by side initially
+    print_grids_side_by_side(grid1, grid2)
+    time.sleep(2)  # Pause before starting animation
+
+    # Animate movement for both grids
+    for rule in rules:
+        # Move robot in grid1
+        position1 = move(grid1, rule, position1, "@")
+        # Move robot in grid2 (this assumes the movement rules are applied similarly)
+        position2 = move(grid2, rule, position2, "@")
+
+        # Print both grids side by side after the move
+        print_grids_side_by_side(grid1, grid2)
+        
+def main():
+    grid, rules, start_position1 = parse_input("2024/D15.txt")  # Parse input file
+    new_grid = make_new_grid(grid)  # Create new grid with modified structure
+    start_position2 = (start_position1[0], start_position1[1] * 2)  # Adjust starting position for new grid
+    # Animate the grid change for both grids
+    animate_grid_change(grid, new_grid, start_position1, start_position2, rules)  # Animate both grid
+
+    gps1 = calculate_gps(grid, "O")  # Calculate GPS for the original grid
     print("GPS for the first grid:", gps1)
 
-    gps2 = calculate_gps(new_grid, "[", rules, new_position)  # Calculate GPS for the new grid
+    gps2 = calculate_gps(new_grid, "[")  # Calculate GPS for the new grid
     print("GPS for the second grid:", gps2)
 
-# Measure execution time
-import time
 
+# Measure execution time
 start_time = time.time()  # Start the timer
 main()  # Call the function
 end_time = time.time()  # End the timer
