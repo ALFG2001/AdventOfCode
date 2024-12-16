@@ -196,7 +196,7 @@ def animate_grid_change(grid1, grid2, start_position1, start_position2, rules):
 
     # Print both grids side by side initially
     print_grids_side_by_side(grid1, grid2)
-    time.sleep(2)  # Pause before starting animation
+    input()
 
     # Animate movement for both grids
     for rule in rules:
