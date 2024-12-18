@@ -71,15 +71,16 @@ else:
     print("No initial path found.")
 
 # Add remaining obstacles and check for path break
-obstacle_index = 0
-while path:
+obstacle_index = len(remaining_obstacles)-1
+grid = [["#" if (col, row) in obstacles else "." for col in range(grid_size)] for row in range(grid_size)]
+while True:
     x, y = remaining_obstacles[obstacle_index]
-    grid[y][x] = "#"  # Add the next obstacle
-    if not find_path(grid, start, end):
+    grid[y][x] = "."  # Add the next obstacle
+    if find_path(grid, start, end):
         print(f"Obstacle breaking path: {x},{y}")
         break
     else:
-        obstacle_index += 1
+        obstacle_index -= 1
 
 # Print execution time
 end_time = time.time()
